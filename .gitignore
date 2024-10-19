@@ -1,0 +1,9 @@
+*_venv/
+.env
+
+data/*
+!data/mZvnATAawpM.txt
+!data/5NUGCNhfZ4I.txt
+
+*.ipynb
+__pycache__/

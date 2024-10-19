@@ -1,5 +1,6 @@
 *_venv/
 .env
+.streamlit/
 
 data/*
 !data/mZvnATAawpM.txt

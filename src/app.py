@@ -9,6 +9,7 @@ from chatbot import build_chatbot
 from pytubefix import YouTube
 
 from pathlib import Path
+import os
 
 
 DATA_DIR = Path("data")
@@ -30,7 +31,8 @@ DEFAULT_PROMPT = "Use the content of the following videos to answer any question
 
 
 # OpenAI API key
-load_dotenv(dotenv_path='conf/.env')
+# load_dotenv(dotenv_path='conf/.env')
+os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 
 
 # [ST] App basics

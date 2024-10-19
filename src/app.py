@@ -49,7 +49,7 @@ def initialize_chatbot(system_prompt, model):
     transcript = ""
     for path, title in zip(TRANSCRIPT_PATHS, VIDEO_TITLES):
         if path.exists():
-            with open(path, "r") as f:
+            with open(path, "r", encoding = "ISO-8859-1") as f:
                 transcript += f"Title: {title}\n"
                 transcript += f.read()
                 transcript += "\n\n"

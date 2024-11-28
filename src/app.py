@@ -4,6 +4,10 @@ import streamlit as st
 from llama_index.llms.openai import OpenAI
 # from langchain_openai import ChatOpenAI
 
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
 # from chatbot import build_chatbot
 from chatbot import load_chroma_index
 

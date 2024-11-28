@@ -8,3 +8,5 @@ data/*
 
 *.ipynb
 __pycache__/
+
+project_doc.md

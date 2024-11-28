@@ -3,8 +3,7 @@
 .streamlit/
 
 data/*
-!data/mZvnATAawpM.txt
-!data/5NUGCNhfZ4I.txt
+!data/chroma
 
 *.ipynb
 __pycache__/

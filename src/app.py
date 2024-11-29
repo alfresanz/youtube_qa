@@ -109,7 +109,7 @@ with st.sidebar:
     if st.button("Apply + Restart"):
         st.session_state["chatbot"] = st.session_state["index"].as_chat_engine(chat_mode=chat_mode, llm=llm, response_mode=response_mode, similarity_top_k=top_k)
 
-    st.subheader("Chatbot settings")
+    st.subheader("Verbosity settings")
 
     debug_mode = st.checkbox("Debug mode", value=False)
 

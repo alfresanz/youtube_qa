@@ -25,7 +25,7 @@ CHROMA_DB_PATH = DATA_DIR / "chroma"
 CHROMA_COLLECTION_NAME = "libre-a-los-30-videos"
 
 CHAT_MODES = ["best", "condense_question", "context", "condense_plus_context"]
-MODELS = ["gpt-4o-mini", "gpt-4o", "o1-mini", "o1-preview"]
+MODELS = ["gpt-4o", "gpt-4o-mini", "o1-mini", "o1-preview"]
 RESPONSE_MODES = ["compact", "refine", "tree_summarize", "accumulate", "compact_accumulate"]
 
 # TRANSCRIPT_PATHS = [
@@ -98,7 +98,7 @@ with st.sidebar:
     st.subheader("Chatbot settings")
 
     model = st.selectbox("Model", MODELS, index=0)
-    temperature = st.slider("Temperature", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
+    temperature = st.slider("Temperature", min_value=0.0, max_value=1.0, value=1.0, step=0.01)
     llm = OpenAI(temperature=temperature, model=model)
 
     response_mode = st.selectbox("Response mode", RESPONSE_MODES, index=0)

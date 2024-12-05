@@ -81,6 +81,55 @@ st.title("Accede a nuestro conocimiento acumulado")
 #         ): 
 #         yield msg.content
 
+def render_chat(debug_mode=False):
+    for message in st.session_state["chat_history"]:
+    
+        if message["role"] == "user":
+            with st.chat_message("user"):
+                st.write(message["content"])
+        
+        elif message["role"] == "assistant":
+            with st.chat_message("ai"):
+                st.write(message["content"])
+        
+        elif message["role"] == "tool" and debug_mode:
+            with st.chat_message("tool"):
+                with st.expander("Retrieved nodes"):
+                    st.write(message["content"])
+
+        # elif message.role == "assistant":
+
+        #     if message.content is not None and message.content != "":
+            
+        #         if "tool_calls" in message.additional_kwargs:
+        #             tool_calls_dicts = message.additional_kwargs["tool_calls"]
+
+        #             with st.chat_message("tool"):
+        #                 with st.expander("Retrieved nodes"):
+        #                     for t, tool_call in enumerate(tool_calls_dicts):
+        #                         st.write(f"Tool call {t+1}: {tool_call['input']}")
+        #                         st.write("\n\n".join([str(n) for n in tool_call["retrieved_nodes"]]))
+
+        #         with st.chat_message("ai"):
+        #             st.write(message.content)
+
+        # elif message.role == "tool" and debug_mode:
+
+        #     node_dicts = message.additional_kwargs.get("retrieved_nodes")
+
+        #     if node_dicts is not None:
+        #         with st.chat_message("tool"):
+        #             with st.expander("Retrieved nodes"):
+        #                 st.write("\n\n".join([str(n) for n in node_dicts]))
+
+
+# [ST] Initialize config in session state
+if "debug_mode" not in st.session_state:
+    st.session_state["debug_mode"] = False
+
+# [ST] Initialize chat history in session state
+if "chat_history" not in st.session_state:
+    st.session_state["chat_history"] = []
 
 # [ST] Initialize index in session state
 if "index" not in st.session_state:
@@ -111,7 +160,7 @@ with st.sidebar:
 
     st.subheader("Verbosity settings")
 
-    debug_mode = st.checkbox("Debug mode", value=False)
+    st.session_state["debug_mode"] = st.checkbox("Show retrieved nodes", value=False)
 
 
 # [ST] Initialize chatbot in session state
@@ -120,17 +169,7 @@ if "chatbot" not in st.session_state:
 
 
 # [ST] Write previous chat messages
-for message in st.session_state["chatbot"].chat_history:
-    
-    if message.role == "user":
-        with st.chat_message("user"):
-            st.write(message.content)
-
-    if message.role == "assistant":
-
-        if message.content is not None:
-            with st.chat_message("ai"):
-                st.write(message.content)            
+render_chat(debug_mode=st.session_state["debug_mode"])          
 
 
 # [ST] Get user input, answer, and write to chat
@@ -138,18 +177,44 @@ user_query = st.chat_input("¿En qué puedo ayudarte?")
 
 if user_query is not None and user_query != "":
 
+    messages = [{"role": "user", "content": user_query}]
+
     with st.chat_message("user"):
         st.markdown(user_query)
 
     response = st.session_state["chatbot"].stream_chat(user_query)
 
-    if debug_mode and len(response.source_nodes) > 0:
+    if len(response.source_nodes) > 0:
 
-        node_dicts = [{"score": n.score, "text": n.text, "metadata": n.metadata} for n in response.source_nodes]
+        tool_call_msg = None
+        for message in st.session_state["chatbot"].chat_history[::-1]:
+            if message.role == "assistant" and "tool_calls" in message.additional_kwargs:
+                tool_call_msg = message
+                break
 
-        with st.chat_message("tool"):
-            st.write("\n\n".join([str(n) for n in node_dicts]))
+        tool_calls_dicts = []
+        for t, tool_call in enumerate(tool_call_msg.additional_kwargs["tool_calls"]):
+            node_dicts = [{"score": n.score, "text": n.text, "metadata": n.metadata} for n in response.source_nodes[t*top_k:(t+1)*top_k]]
+            tool_input = tool_call.function.arguments
+            tool_calls_dicts.append({"input": tool_input, "retrieved_nodes": node_dicts})
+
+        tool_calls_str = ""
+        for t, tool_call in enumerate(tool_calls_dicts):
+            tool_calls_str += f"Tool call {t+1}: {tool_call['input']}\n\n"
+            tool_calls_str += "\n\n".join([str(n) for n in tool_call["retrieved_nodes"]])
+            tool_calls_str += "\n\n\n\n\n"
+        tool_calls_str = tool_calls_str.strip()
+
+        messages.append({"role": "tool", "content": tool_calls_str})
+
+        if st.session_state["debug_mode"]:
+            with st.chat_message("tool"):
+                with st.expander("Retrieved nodes"):
+                    st.write(tool_calls_str)
 
     with st.chat_message("ai"):
         st.write_stream(response.response_gen)
+    
+    messages.append({"role": "assistant", "content": response.response})
 
+    st.session_state["chat_history"].extend(messages)

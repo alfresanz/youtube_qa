@@ -3,7 +3,12 @@
 .streamlit/
 
 data/*
-!data/chroma
+#!data/chroma
+!data/index_store.json
+!data/default__vector_store.json
+!data/docstore.json
+!data/graph_store.json
+!data/image__vector_store.json
 
 *.ipynb
 __pycache__/
